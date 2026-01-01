@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>safaaa dianaaa | ntinggg</title>
+    <style>
+        /* --- 1. RESET & LOCK LAYOUT --- */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Mengunci layar agar tidak bisa digeser ke arah mana pun */
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed; /* Mencegah pull-to-refresh di mobile */
+            background-color: #020005;
+        }
+
+        body {
+            background-image: radial-gradient(circle at center, #1a0033 0%, #020005 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            perspective: 2000px;
+        }
+
+        /* --- 2. BACKGROUND ELEMENTS (OPTIMIZED) --- */
+        .bg-container {
+            position: absolute;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        /* Menggunakan transform translate3d untuk akselerasi GPU agar tidak lag */
+        .stardust {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.3;
+            will-change: transform;
+            animation: fall var(--d) linear infinite;
+        }
+
+        @keyframes fall {
+            from { transform: translate3d(0, -10vh, 0); }
+            to { transform: translate3d(20px, 110vh, 0); }
+        }
+
+        .bg-heart {
+            position: absolute;
+            font-size: 1.2rem;
+            opacity: 0;
+            will-change: transform, opacity;
+            animation: floatUp var(--duration) linear infinite;
+            filter: blur(1px) drop-shadow(0 0 5px #aa00ff);
+        }
+
+        @keyframes floatUp {
+            0% { transform: translate3d(0, 110vh, 0) scale(0.5); opacity: 0; }
+            20% { opacity: 0.5; }
+            80% { opacity: 0.5; }
+            100% { transform: translate3d(0, -15vh, 0) scale(1.2); opacity: 0; }
+        }
+
+        /* --- 3. INTRO ANIMATION LAYERS --- */
+        .intro-layer {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px; height: 100px;
+            background: linear-gradient(to bottom, transparent, #dfa3ff);
+            opacity: 0;
+            transform-origin: bottom center;
+            will-change: transform, opacity;
+        }
+
+        .nebula-pulse {
+            position: absolute;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(170, 0, 255, 0.3), transparent 70%);
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 90;
+            will-change: transform, opacity;
+        }
+
+        @keyframes nebulaGrow {
+            0% { transform: scale(1); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: scale(20); opacity: 0; }
+        }
+
+        .singularity {
+            width: 0; height: 0;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 60px 20px white;
+            z-index: 105;
+        }
+
+        .shockwave {
+            position: absolute;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            width: 0; height: 0;
+            opacity: 0;
+            will-change: width, height, opacity;
+        }
+
+        .intro-orb {
+            position: absolute;
+            width: 0; height: 0;
+            background: radial-gradient(circle, #b100e8, #240046, transparent);
+            border-radius: 50%;
+            opacity: 0;
+            will-change: width, height, opacity;
+        }
+
+        .gyro-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(216, 112, 255, 0.5);
+            opacity: 0;
+            will-change: transform;
+        }
+
+        .flash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: white;
+            opacity: 0;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        /* --- 4. MAIN SCENE ( TIDAK TERPOTONG) --- */
+        .main-scene {
+            position: relative;
+            /* Menggunakan vmin agar ukuran adaptif dan tidak terpotong di layar kecil */
+            width: 90vmin; 
+            height: 90vmin;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 2.5s ease;
+        }
+
+        .connector-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(to right, rgba(224, 64, 251, 0.6), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .inter-connector {
+            position: absolute;
+            height: 1px;
+            background: rgba(224, 64, 251, 0.3);
+            transform-origin: left center;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .heart-wrapper {
+            position: absolute;
+            z-index: 20;
+            will-change: transform;
+            animation: slowBeat 3s infinite ease-in-out;
+        }
+        
+        .heart {
+            background: linear-gradient(135deg, #e040fb, #aa00ff);
+            width: 18vmin; height: 18vmin; /* Ukuran jantung adaptif */
+            position: relative;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 40px rgba(224, 64, 251, 0.5); 
+        }
+
+        .heart::before, .heart::after {
+            content: "";
+            background: inherit;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            position: absolute;
+        }
+        .heart::before { top: -50%; left: 0; }
+        .heart::after { top: 0; left: 50%; }
+
+        .heart-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            color: white;
+            font-weight: bold;
+            font-size: 2.5vmin;
+            text-align: center;
+            z-index: 25;
+            white-space: nowrap;
+        }
+
+        .orbit-system {
+            position: absolute;
+            width: 100%; height: 100%;
+            will-change: transform;
+            animation: rotateSystem 60s linear infinite;
+        }
+
+        .planet {
+            position: absolute;
+            width: 15vmin; height: 15vmin; /* Ukuran  adaptif */
+            border-radius: 50%;
+            border: 2px solid #e040fb;
+            box-shadow: 0 0 15px rgba(224, 64, 251, 0.8);
+            top: 50%; left: 50%;
+            transform: translate3d(-50%, -50%, 0) scale(0);
+            transition: transform 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+            overflow: hidden;
+            will-change: transform;
+        }
+
+        .planet img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            animation: counterRotate 60s linear infinite;
+        }
+
+        .message {
+            position: absolute;
+            bottom: 5vh;
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 3s;
+            z-index: 30;
+        }
+        .message h1 {
+            color: #d1c4e9;
+            font-weight: 200;
+            letter-spacing: 1.5vmin;
+            font-size: 4vmin;
+            text-transform: uppercase;
+        }
+
+        /* --- KEYFRAMES (ACCELERATED) --- */
+        @keyframes sceneBreath {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        @keyframes suction {
+            0% { transform: translate3d(0, 500px, 0) scale(1.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate3d(0, 0, 0) scale(0.1); opacity: 0; }
+        }
+        @keyframes largeRipple {
+            0% { width: 0; height: 0; opacity: 1; border-width: 10px; }
+            100% { width: 250vh; height: 250vh; opacity: 0; border-width: 0px; }
+        }
+        @keyframes largeOrbGrow {
+            0% { width: 0; height: 0; opacity: 0; }
+            30% { opacity: 0.8; }
+            100% { width: 150vh; height: 150vh; opacity: 0; }
+        }
+        @keyframes slowBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        @keyframes rotateSystem { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
+        }
+        @keyframes counterRotate { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(-360deg); } 
+        }
+        @keyframes spin3D {
+            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+        @keyframes flashEffect {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body oncontextmenu="return false;"> <div class="bg-container" id="bgContainer"></div>
+    <div class="nebula-pulse" id="nebulaPulse"></div>
+
+    <div class="intro-layer">
+        <div id="particlesArea"></div>
+        <div class="singularity" id="singularity"></div>
+        <div class="shockwave" id="shockwave"></div>
+        <div class="intro-orb" id="orb"></div>
+        <div class="gyro-ring" id="ring1" style="width: 500px; height: 500px;"></div>
+        <div class="gyro-ring" id="ring2" style="width: 650px; height: 650px;"></div>
+        <div class="gyro-ring" id="ring3" style="width: 800px; height: 800px;"></div>
+    </div>
+
+    <div class="flash-screen" id="flash"></div>
+
+    <div class="main-scene" id="mainScene">
+        <div class="heart-wrapper">
+            <div class="heart">
+                <div class="heart-text">kesayangan<br>hyugaa</div>
+            </div>
+        </div>
+        <div class="orbit-system" id="orbitSystem"></div>
+    </div>
+
+    <div class="message" id="message">
+    </div>
+
+    <script>
+        const photos = [
+            'https://files.catbox.moe/oenwi9.jpg',
+            'https://files.catbox.moe/o99h6a.jpg',
+            'https://files.catbox.moe/7mhc1z.jpg',
+            'https://files.catbox.moe/xs10rz.jpg',
+            'https://files.catbox.moe/bytjdd.jpg',
+            'https://files.catbox.moe/cx2u09.jpg',
+        ];
+
+        // Radius dinamis agar tidak terpotong di layar (35% dari ukuran layar terkecil)
+        const getRadius = () => Math.min(window.innerWidth, window.innerHeight) * 0.35;
+        let radius = getRadius();
+
+        // 1. Setup Stardust & Hearts (Optimasi Jumlah)
+        const bgContainer = document.getElementById('bgContainer');
+        for(let i=0; i<50; i++){
+            const star = document.createElement('div');
+            star.className = 'stardust';
+            const size = Math.random() * 2 + 'px';
+            star.style.width = size;
+            star.style.height = size;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.setProperty('--d', (Math.random() * 5 + 10) + 's');
+            star.style.animationDelay = Math.random() * 5 + 's';
+            bgContainer.appendChild(star);
+        }
+
+        // 2. Setup Orbit System
+        const orbitSystem = document.getElementById('orbitSystem');
+        const planetPositions = [];
+        
+        photos.forEach((url, i) => {
+            const angle = (i * (360 / photos.length));
+            const rad = (angle * Math.PI) / 180;
+            const x = Math.cos(rad) * radius;
+            const y = Math.sin(rad) * radius;
+            planetPositions.push({x, y, angle});
+
+            const container = document.createElement('div');
+            container.style.position = 'absolute';
+            container.style.width = '100%';
+            container.style.height = '100%';
+            
+            const line = document.createElement('div');
+            line.className = 'connector-line';
+            line.style.width = radius + 'px';
+            line.style.left = '50%';
+            line.style.top = '50%';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const p = document.createElement('div');
+            p.className = 'planet';
+            const img = document.createElement('img');
+            img.src = url;
+            p.appendChild(img);
+            
+            p.dataset.targetX = x;
+            p.dataset.targetY = y;
+
+            container.appendChild(line);
+            container.appendChild(p);
+            orbitSystem.appendChild(container);
+        });
+
+        // Garis Koneksi Antar Planet
+        planetPositions.forEach((pos, i) => {
+            const nextPos = planetPositions[(i + 1) % planetPositions.length];
+            const interLine = document.createElement('div');
+            interLine.className = 'inter-connector';
+            const dx = nextPos.x - pos.x;
+            const dy = nextPos.y - pos.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const interAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+            interLine.style.width = dist + 'px';
+            interLine.style.left = `calc(50% + ${pos.x}px)`;
+            interLine.style.top = `calc(50% + ${pos.y}px)`;
+            interLine.style.transform = `rotate(${interAngle}deg)`;
+            orbitSystem.appendChild(interLine);
+        });
+
+        // 3. Timeline Sequence
+        window.onload = () => {
+            const pArea = document.getElementById('particlesArea');
+            for(let i=0; i<25; i++){
+                const part = document.createElement('div');
+                part.className = 'particle';
+                part.style.transform = `rotate(${i * 14.4}deg)`;
+                part.style.animation = `suction 2.5s ease-in forwards`;
+                pArea.appendChild(part);
+            }
+
+            setTimeout(() => {
+                document.getElementById('nebulaPulse').style.animation = "nebulaGrow 4s ease-out forwards";
+                document.getElementById('singularity').style.animation = "expandSingularity 1s forwards";
+            }, 2500);
+
+            setTimeout(() => {
+                document.getElementById('shockwave').style.animation = "largeRipple 2.5s ease-out forwards";
+                document.getElementById('orb').style.animation = "largeOrbGrow 3s ease-out forwards";
+            }, 3500);
+
+            setTimeout(() => {
+                ['ring1', 'ring2', 'ring3'].forEach((id, idx) => {
+                    const r = document.getElementById(id);
+                    r.style.opacity = 1;
+                    r.style.animation = `spin3D ${6 + idx*2}s linear infinite`;
+                });
+            }, 4000);
+
+            setTimeout(() => {
+                document.getElementById('flash').style.animation = "flashEffect 1.5s ease-out forwards";
+            }, 7000);
+
+            setTimeout(() => {
+                document.querySelector('.intro-layer').style.display = 'none';
+                const mainScene = document.getElementById('mainScene');
+                mainScene.style.opacity = 1;
+                mainScene.style.animation = "sceneBreath 8s ease-in-out infinite";
+                
+                const planets = document.querySelectorAll('.planet');
+                planets.forEach((p) => {
+                    const x = p.dataset.targetX;
+                    const y = p.dataset.targetY;
+                    p.style.transform = `translate3d(calc(-50% + ${x}px), calc(-50% + ${y}px), 0) scale(1)`;
+                });
+
+                document.getElementById('message').style.opacity = 1;
+            }, 7500);
+        };
+
+        // Mengatur 0 ukuran jika layar berputar/berubah
+        window.addEventListener('resize', () => {
+            location.reload(); 
+        });
+    </script>
+</body>
+</html>
